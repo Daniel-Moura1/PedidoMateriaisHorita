@@ -6,7 +6,8 @@
     <title>Solicitação de Materiais | Horita</title>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -23,6 +24,29 @@
     <main>
         <section class="filtros-container">
             <div class="campo-grupo">
+                <label for="fazenda">Fazenda:*</label>
+                <select id="fazenda">
+                    <option value="" disabled selected>Selecione a Fazenda...</option>
+                    <option value="Faz. Arizona">Faz. Arizona</option>
+                    <option value="Faz. Vitoria">Faz. Vitoria</option>
+                    <option value="Faz. Australia">Faz. Australia</option>
+                    <option value="Faz. Colorado">Faz. Colorado</option>
+                    <option value="Faz. Acalanto">Faz. Acalanto</option>
+                    <option value="Faz. Roda Velha">Faz. Roda Velha</option>
+                    <option value="Faz. Timbauba">Faz. Timbauba</option>
+                    <option value="Faz. Anda Luz">Faz. Anda Luz</option>
+                    <option value="Faz. Sagarana">Faz. Sagarana</option>
+                    <option value="Faz. Requinte">Faz. Requinte</option>
+                    <option value="Algodoeira">Algodoeira</option>
+                </select>
+            </div>
+
+            <div class="campo-grupo">
+                <label for="aplicacao">Onde será aplicado:*</label>
+                <input type="text" id="aplicacao" placeholder="Ex: Refeitório, Alojamento..." style="width: 250px;">
+            </div>
+
+            <div class="campo-grupo">
                 <label for="categoria">Categoria:</label>
                 <select id="categoria" onchange="trocarCategoria()">
                     <option value="" disabled selected>Selecione a categoria...</option>
@@ -33,17 +57,24 @@
                     <option value="ferragem">Mats. Ferragens</option>
                     <option value="jardinagem">Mats. Jardinagens</option>
                     <option value="equipamentos">Mats. Equipamentos</option>
+                    <option value="ferramenta_manual">Ferramentas Manuais</option>
+                    <option value="pecas_acessorios">Peças e Acessórios</option>
                 </select>
             </div>
 
             <div class="campo-grupo" style="position: relative; flex-grow: 1;">
                 <label for="busca">Produto:</label>
-                <input type="text" id="busca" 
-                       onkeyup="buscarProduto()" 
-                       onclick="this.select()" 
-                       placeholder="Digite o nome ou código do produto..." 
-                       autocomplete="off">
-                
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="busca" 
+                        onkeyup="buscarProduto()" 
+                        onclick="this.select()" 
+                        placeholder="Digite o nome ou código..." 
+                        autocomplete="off" style="flex-grow: 1;">
+                    
+                    <button type="button" onclick="adicionarManual()" class="btn-manual">
+                        + Item Manual
+                    </button>
+                </div>
                 <div id="resultados"></div>
             </div>
         </section>
@@ -66,14 +97,12 @@
             </table>
         </section>
 
-        <footer class="acoes-container">
-            <button class="btn-excel" onclick="exportarExcel()">
-                Exportar para Excel
-            </button>
-            <button class="btn-refresh" onclick="refreshSistema()">
-                Limpar Lista
-            </button>
-        </footer>
+    <footer class="acoes-container">
+        <button class="btn-excel" onclick="exportarExcel()">Exportar Excel</button>
+        <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button> 
+        <button class="btn-email" onclick="enviarEmail()">Enviar E-mail</button>
+        <button class="btn-refresh" onclick="refreshSistema()">Limpar</button>
+    </footer>
     </main>
 
     <script src="script.js"></script>

@@ -189,6 +189,13 @@ td input:focus {
     border-bottom: 2px solid #ff4d4d !important;
 }
 
+/* Destaque de obrigatoriedade para a Descrição Manual */
+td input[oninput*="descricao"]:placeholder-shown {
+    background-color: #fff5f5 !important;
+    border: 1px solid #ffcccc !important;
+    border-bottom: 2px solid #ff4d4d !important;
+}
+
 /* BOTÃO DE EXCLUIR (AÇÃO NA TABELA) */
 .btn-excluir {
     background: #fff;
@@ -223,7 +230,6 @@ td input:focus {
 
 /* BOTÃO EXPORTAR E REFRESH */
 .btn-excel, .btn-refresh {
-    padding: 12px 28px;
     border-radius: 10px;
     font-weight: 700;
     font-size: 14px;
@@ -259,4 +265,116 @@ td input:focus {
     border-color: var(--danger);
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(220, 53, 69, 0.1);
+}
+
+/* Estilo do botão de Item Manual */
+.btn-manual {
+    background-color: var(--white);
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btn-manual:hover {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+/* Estilização do Código na Tabela */
+.badge-codigo {
+    font-size: 11px;
+    background: #f0f0f0;
+    padding: 3px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Destaque para o campo de descrição quando for manual */
+td input[oninput*="descricao"] {
+    font-weight: 600;
+    color: #897cff; 
+}
+
+/* Faz com que tudo digitado nos inputs da tabela apareça em maiúsculo na hora */
+td input {
+    text-transform: uppercase;
+}
+
+/* Garante que os placeholders não fiquem em maiúsculo (opcional) */
+td input::placeholder {
+    text-transform: none;
+}
+
+/* Adicione isso ao seu arquivo CSS */
+#aplicacao {
+    text-transform: uppercase;
+}
+
+#aplicacao::placeholder {
+    text-transform: none;
+}
+
+/* BOTÃO PDF */
+.btn-pdf {
+    background-color: #e74c3c; /* Vermelho para PDF */
+    color: var(--white);
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+.btn-pdf:hover {
+    background-color: #c0392b;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* PADRONIZAÇÃO DOS BOTÕES (TAMANHO IGUAL) */
+.acoes-container {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* TODOS OS BOTÕES IGUAIS */
+.acoes-container button {
+    flex: 1; /* todos com mesma largura */
+    max-width: 220px; /* evita botão gigante */
+    height: 45px;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* centraliza texto */
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* BOTÃO E-MAIL */
+.btn-email {
+    background-color: var(--primary);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(40, 6, 231, 0.2);
+}
+
+.btn-email:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(40, 6, 231, 0.3);
 }
