@@ -228,19 +228,6 @@ document.addEventListener("click", function(evento) {
     }
 });
 
-// NOVA FUNÇÃO: Adiciona uma linha vazia editável
-function adicionarManual() {
-    lista.push({
-        codigo: "SEM CADASTRO", 
-        descricao: "",    // Fica vazio para o usuário escrever
-        Quantidade: "",
-        marca: "",
-        cor: "",
-        obs: ""
-    });
-    atualizarTabela();
-}
-
 // NOVA FUNÇÃO: Adiciona uma linha vazia editável (Com confirmação)
 function adicionarManual() {
     // Mensagem de alerta para evitar cadastros manuais desnecessários
