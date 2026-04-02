@@ -107,7 +107,7 @@ function atualizarTabela() {
     
     tbody.innerHTML = lista.map((item, index) => {
         // LÓGICA: Se o código for MANUAL, a descrição vira um campo de texto (input)
-        const celulaDescricao = item.codigo === "MANUAL" 
+        const celulaDescricao = item.codigo === "SEM CADASTRO" 
             ? `<input type="text" placeholder="Escreva o nome do produto..." 
                 value="${item.descricao}" 
                 oninput="lista[${index}].descricao = this.value.toUpperCase()"
@@ -172,7 +172,7 @@ function exportarExcel() {
     }
 
     // Validações de descrição manual e quantidade
-    if (lista.some(item => (item.codigo === "MANUAL" && !item.descricao.trim()) || !item.Quantidade.trim())) {
+    if (lista.some(item => (item.codigo === "SEM CADASTRO" && !item.descricao.trim()) || !item.Quantidade.trim())) {
         alert("Preencha todas as descrições manuais e quantidades.");
         return;
     }
@@ -208,7 +208,7 @@ document.addEventListener("click", function(evento) {
 // NOVA FUNÇÃO: Adiciona uma linha vazia editável
 function adicionarManual() {
     lista.push({
-        codigo: "MANUAL", 
+        codigo: "SEM CADASTRO", 
         descricao: "",    // Fica vazio para o usuário escrever
         Quantidade: "",
         marca: "",
@@ -225,7 +225,7 @@ function adicionarManual() {
     
     if (confirm(mensagem)) {
         lista.push({
-            codigo: "MANUAL", 
+            codigo: "SEM CADASTRO", 
             descricao: "",    // Fica vazio para o usuário escrever
             Quantidade: "",
             marca: "",
@@ -258,7 +258,7 @@ function exportarPDF() {
     // 🚩 Validação: Itens sem Quantidade e Manuais sem Descrição
     const temErro = lista.some(item => {
         const semQtd = !item.Quantidade || item.Quantidade.trim() === "";
-        const manualSemDesc = item.codigo === "MANUAL" && (!item.descricao || item.descricao.trim() === "");
+        const manualSemDesc = item.codigo === "SEM CADASTRO" && (!item.descricao || item.descricao.trim() === "");
         return semQtd || manualSemDesc;
     });
 
@@ -328,7 +328,7 @@ function exportarPDF() {
         columnStyles: {
             0: { cellWidth: 20, halign: 'center' }, // Cód menor
             1: { cellWidth: 50 },                   // Descrição com espaço bom
-            2: { cellWidth: 8, halign: 'center' }, // Qtd
+            2: { cellWidth: 14, halign: 'center' }, // Qtd
             3: { cellWidth: 25 },                   // Marca
             4: { cellWidth: 20 },                   // Cor
             5: { cellWidth: 'auto' }                // Obs ocupa o resto e QUEBRA A LINHA
@@ -372,7 +372,7 @@ function enviarEmail() {
     
     const temErro = lista.some(item => {
         const semQtd = !item.Quantidade || item.Quantidade.trim() === "";
-        const manualSemDesc = item.codigo === "MANUAL" && (!item.descricao || item.descricao.trim() === "");
+        const manualSemDesc = item.codigo === "SEM CADASTRO" && (!item.descricao || item.descricao.trim() === "");
         return semQtd || manualSemDesc;
     });
 
