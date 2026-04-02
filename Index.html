@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitação de Materiais | Horita</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="header-container">
+        <div>
+            <h2>Pedido de Materiais</h2>
+            <p style="color: #666; margin-top: 5px;">Selecione a categoria e busque os itens desejados.</p>
+        </div>
+        <img src="Logo Horita.png" alt="Logo Horita" class="logo">
+    </header>
+
+    <main>
+        <section class="filtros-container">
+            <div class="campo-grupo">
+                <label for="categoria">Categoria:</label>
+                <select id="categoria" onchange="trocarCategoria()">
+                    <option value="" disabled selected>Selecione a categoria...</option>
+                    <option value="construcao">Mats. Construção</option>
+                    <option value="hidraulico">Mats. Hidráulicos</option>
+                    <option value="pintura">Mats. Pinturas</option>
+                    <option value="eletrico">Mats. Elétricos</option>
+                    <option value="ferragem">Mats. Ferragens</option>
+                    <option value="jardinagem">Mats. Jardinagens</option>
+                    <option value="equipamentos">Mats. Equipamentos</option>
+                </select>
+            </div>
+
+            <div class="campo-grupo" style="position: relative; flex-grow: 1;">
+                <label for="busca">Produto:</label>
+                <input type="text" id="busca" 
+                       onkeyup="buscarProduto()" 
+                       onclick="this.select()" 
+                       placeholder="Digite o nome ou código do produto..." 
+                       autocomplete="off">
+                
+                <div id="resultados"></div>
+            </div>
+        </section>
+
+        <section class="tabela-container">
+            <table id="tabela">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Código</th>
+                        <th>Descrição do Material</th>
+                        <th style="width: 120px;">Qtd.*</th>
+                        <th style="width: 150px;">Marca</th>
+                        <th style="width: 120px;">Cor</th>
+                        <th>Observações</th>
+                        <th style="width: 50px;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+
+        <footer class="acoes-container">
+            <button class="btn-excel" onclick="exportarExcel()">
+                Exportar para Excel
+            </button>
+            <button class="btn-refresh" onclick="refreshSistema()">
+                Limpar Lista
+            </button>
+        </footer>
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

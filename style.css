@@ -1,0 +1,262 @@
+/* VARIÁVEIS DE CORES - Estilo Corporativo */
+:root {
+    --primary: #2806e7;
+    --primary-dark: #1e04b5;
+    --success: #198754;
+    --bg-body: #f4f7f6;
+    --text-main: #333;
+    --text-muted: #666;
+    --white: #ffffff;
+    --border: #dee2e6;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --danger: #dc3545;
+}
+
+/* RESET E BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 40px;
+}
+
+/* HEADER */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--white);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.logo {
+    max-width: 150px;
+    height: auto;
+}
+
+h2 {
+    color: var(--primary);
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* FILTROS E BUSCA */
+.filtros-container {
+    display: flex;
+    gap: 20px;
+    background: var(--white);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    align-items: flex-end;
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campo-grupo label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+input, select {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fdfdfd;
+    transition: all 0.2s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(40, 6, 231, 0.1);
+}
+
+/* RESULTADOS FLUTUANTES */
+#resultados {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f9fa;
+    font-size: 14px;
+}
+
+.item:hover {
+    background-color: #f0f3ff;
+    color: var(--primary);
+}
+
+/* TABELA DE MATERIAIS */
+.tabela-container {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: var(--primary);
+    color: var(--white);
+    text-align: left;
+    padding: 15px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+tbody tr:hover {
+    background-color: #f6f8ff;
+}
+
+/* INPUTS DENTRO DA TABELA (COM DESTAQUE) */
+td input {
+    width: 100%;
+    border: 1px solid #f0f0f0; /* Borda bem suave para indicar campo */
+    background: #fdfdfd; /* Fundo levemente diferente para convidar ao clique */
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+td input:hover {
+    border-color: var(--border);
+    background: var(--white);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+td input:focus {
+    background: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(40, 6, 231, 0.05);
+    outline: none;
+}
+
+/* REGRAS DE OBRIGATORIEDADE (QUANTIDADE) */
+.input-qtd {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.input-qtd:placeholder-shown {
+    background-color: #fff5f5 !important;
+    border: 1px solid #ffcccc !important;
+    border-bottom: 2px solid #ff4d4d !important;
+}
+
+/* BOTÃO DE EXCLUIR (AÇÃO NA TABELA) */
+.btn-excluir {
+    background: #fff;
+    border: 1px solid #ffcccc;
+    color: #dc3545;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.btn-excluir:hover {
+    background: #fc959f;
+    color: #fff;
+    border-color: #dc3545;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+}
+
+/* BOTÕES DE AÇÃO - CONTAINER */
+.acoes-container {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* BOTÃO EXPORTAR E REFRESH */
+.btn-excel, .btn-refresh {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+.btn-excel {
+    background-color: var(--success);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+}
+
+.btn-excel:hover {
+    background-color: #146c43;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(25, 135, 84, 0.3);
+}
+
+.btn-refresh {
+    background-color: transparent;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+}
+
+.btn-refresh:hover {
+    background-color: #fff;
+    color: var(--danger);
+    border-color: var(--danger);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(220, 53, 69, 0.1);
+}
