@@ -1,7 +1,7 @@
 let produtosFiltrados = [];
 let lista = [];
 
-// 🔄 CARREGAR JSON
+//  CARREGAR JSON
 async function carregarProdutos(categoria) {
     try {
         let response = await fetch(categoria + ".json");
@@ -11,7 +11,7 @@ async function carregarProdutos(categoria) {
     }
 }
 
-// 🔄 TROCAR CATEGORIA
+//  TROCAR CATEGORIA
 async function trocarCategoria() {
     let categoria = document.getElementById("categoria").value;
     if (!categoria) return;
@@ -21,7 +21,7 @@ async function trocarCategoria() {
     // Removi a chamada automática aqui para o usuário clicar no campo e abrir
 }
 
-// 🔍 BUSCAR / MOSTRAR AO CLICAR
+//  BUSCAR / MOSTRAR AO CLICAR
 function buscarProduto() {
     let termo = document.getElementById("busca").value.toLowerCase();
 
@@ -39,7 +39,7 @@ function buscarProduto() {
     mostrarResultados(filtrados);
 }
 
-// 📋 RESULTADOS DA BUSCA
+//  RESULTADOS DA BUSCA
 function mostrarResultados(listaProdutos) {
     let div = document.getElementById("resultados");
     div.innerHTML = "";
@@ -74,7 +74,7 @@ document.getElementById("busca").addEventListener("click", function() {
     }
 });
 
-// ➕ ADICIONAR NA TABELA
+//  ADICIONAR NA TABELA
 function adicionarDireto(produto) {
     let existente = lista.find(item => item.codigo === produto.codigo);
 
@@ -101,7 +101,7 @@ function remover(index) {
     atualizarTabela();
 }
 
-// 🔄 ATUALIZAR TABELA
+//  ATUALIZAR TABELA
 function atualizarTabela() {
     let tbody = document.querySelector("#tabela tbody");
     
@@ -146,7 +146,7 @@ function atualizarTabela() {
     }).join('');
 }
 
-// 🔄 REFRESH SISTEMA
+//  REFRESH SISTEMA
 function refreshSistema() {
     if (confirm("Deseja realmente limpar toda a lista?")) {
         lista = [];
@@ -156,7 +156,7 @@ function refreshSistema() {
     }
 }
 
-// 📊 EXPORTAR EXCEL (Formatado e Profissional)
+//  EXPORTAR EXCEL (Formatado e Profissional)
 function exportarExcel() {
     const fazenda = document.getElementById("fazenda").value;
     const aplicacao = document.getElementById("aplicacao").value.trim();
@@ -171,13 +171,13 @@ function exportarExcel() {
         return;
     }
 
-    // 🚩 Validação de campos obrigatórios
+    //  Validação de campos obrigatórios
     if (lista.some(item => (item.codigo === "SEM CADASTRO" && !item.descricao.trim()) || !item.Quantidade.trim())) {
         alert("Preencha todas as descrições de itens SEM CADASTRO e quantidades.");
         return;
     }
 
-    // 🛠️ Organização dos dados em MAIÚSCULO
+    //  Organização dos dados em MAIÚSCULO
     const dadosTratados = lista.map(item => ({
         "FAZENDA": fazenda.toUpperCase(),
         "LOCAL APLICAÇÃO": aplicacao.toUpperCase(),
@@ -253,19 +253,19 @@ function exportarPDF() {
     const fazenda = document.getElementById("fazenda").value;
     const aplicacao = document.getElementById("aplicacao").value.trim();
 
-    // 🚩 Validação: Fazenda e Local
+    //  Validação: Fazenda e Local
     if (!fazenda || !aplicacao) {
         alert("Por favor, selecione a Fazenda e o Local de Aplicação.");
         return;
     }
 
-    // 🚩 Validação: Lista vazia
+    //  Validação: Lista vazia
     if (lista.length === 0) {
         alert("A lista está vazia!");
         return;
     }
 
-    // 🚩 Validação: Itens sem Quantidade e Manuais sem Descrição
+    //  Validação: Itens sem Quantidade e Manuais sem Descrição
     const temErro = lista.some(item => {
         const semQtd = !item.Quantidade || item.Quantidade.trim() === "";
         const manualSemDesc = item.codigo === "SEM CADASTRO" && (!item.descricao || item.descricao.trim() === "");
@@ -351,7 +351,7 @@ function exportarPDF() {
     doc.save(`SOLICITACAO_${fazenda.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`);
 }
 
-// 📧 DICIONÁRIO DE DESTINATÁRIOS POR FAZENDA
+//  DICIONÁRIO DE DESTINATÁRIOS POR FAZENDA
 const contatosFazendas = {
     "Faz. Arizona": "vitoria@horita.com.br",
     "Faz. Vitoria": "vitoria@horita.com.br",
@@ -366,18 +366,18 @@ const contatosFazendas = {
     "Algodoeira": "algodoeira.vitoria@horita.com.br"
 };
 
-// 🚀 FUNÇÃO PARA GERAR O E-MAIL AUTOMÁTICO
+//  FUNÇÃO PARA GERAR O E-MAIL AUTOMÁTICO
 function enviarEmail() {
     const fazenda = document.getElementById("fazenda").value;
     const aplicacao = document.getElementById("aplicacao").value.trim();
 
-    // 🚩 Validação de cabeçalho
+    //  Validação de cabeçalho
     if (!fazenda || !aplicacao) {
         alert("Selecione a Fazenda e o Local de Aplicação antes de gerar o e-mail.");
         return;
     }
 
-    // 🚩 Validação de lista e itens
+    //  Validação de lista e itens
     if (lista.length === 0) return alert("A lista está vazia!");
     
     const temErro = lista.some(item => {
@@ -391,14 +391,14 @@ function enviarEmail() {
         return;
     }
 
-    // 📩 Configuração dos Destinatários (E-mail da Fazenda + Compras)
+    //  Configuração dos Destinatários (E-mail da Fazenda + Compras)
     const emailFazenda = contatosFazendas[fazenda];
     const emailCompras = "compras@horita.com.br";
     const destinatarios = `${emailFazenda}; ${emailCompras}`;
     
     const assunto = `Solicitação de Materiais - ${fazenda.toUpperCase()} (${aplicacao.toUpperCase()})`;
 
-    // 📝 Montagem do corpo do e-mail em formato de tabela textual
+    //  Montagem do corpo do e-mail em formato de tabela textual
     let corpo = `Olá,\n\nSegue solicitação de materiais conforme detalhes abaixo:\n\n`;
     corpo += `FAZENDA: ${fazenda.toUpperCase()}\n`;
     corpo += `LOCAL DE APLICAÇÃO: ${aplicacao.toUpperCase()}\n`;
@@ -415,9 +415,9 @@ function enviarEmail() {
 
     corpo += `\nFavor conferir o arquivo oficial em anexo.\nAtenciosamente.`;
 
-    // 🔗 Gerar link mailto
+    //  Gerar link mailto
     const mailtoLink = `mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
     
-    // 🚀 Abrir o cliente de e-mail
+    //  Abrir o cliente de e-mail
     window.location.href = mailtoLink;
 }
