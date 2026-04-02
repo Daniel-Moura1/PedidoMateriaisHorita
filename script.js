@@ -156,13 +156,13 @@ function refreshSistema() {
     }
 }
 
-// 📊 EXPORTAR EXCEL (Com os novos campos)
+// 📊 EXPORTAR EXCEL (Formatado e Profissional)
 function exportarExcel() {
     const fazenda = document.getElementById("fazenda").value;
     const aplicacao = document.getElementById("aplicacao").value.trim();
 
     if (!fazenda || !aplicacao) {
-        alert("Por favor, selecione a Fazenda e informe onde o material será aplicado.");
+        alert("Por favor, selecione a Fazenda e o Local de Aplicação.");
         return;
     }
 
@@ -171,27 +171,50 @@ function exportarExcel() {
         return;
     }
 
-    // Validações de descrição manual e quantidade
+    // 🚩 Validação de campos obrigatórios
     if (lista.some(item => (item.codigo === "SEM CADASTRO" && !item.descricao.trim()) || !item.Quantidade.trim())) {
-        alert("Preencha todas as descrições manuais e quantidades.");
+        alert("Preencha todas as descrições de itens SEM CADASTRO e quantidades.");
         return;
     }
 
-    // Adiciona as informações fixas em cada linha para o Excel
-    const dadosParaExportar = lista.map(item => ({
-        Fazenda: fazenda,
-        Local_Aplicacao: aplicacao.toUpperCase(),
-        ...item
+    // 🛠️ Organização dos dados em MAIÚSCULO
+    const dadosTratados = lista.map(item => ({
+        "FAZENDA": fazenda.toUpperCase(),
+        "LOCAL APLICAÇÃO": aplicacao.toUpperCase(),
+        "CÓDIGO": item.codigo,
+        "DESCRIÇÃO": item.descricao.toUpperCase(),
+        "QUANTIDADE": item.Quantidade.toUpperCase(),
+        "MARCA": (item.marca || "").toUpperCase(),
+        "COR": (item.cor || "").toUpperCase(),
+        "OBSERVAÇÕES": (item.obs || "").toUpperCase()
     }));
 
-    let ws = XLSX.utils.json_to_sheet(dadosParaExportar);
+    // 1. Cria a planilha a partir dos dados
+    let ws = XLSX.utils.json_to_sheet(dadosTratados);
     let wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Pedido");
 
+    // 2. CONFIGURAÇÃO DE LARGURA DAS COLUNAS (Ajuste Visual)
+    const wscols = [
+        {wch: 20}, // Fazenda
+        {wch: 25}, // Local Aplicação
+        {wch: 15}, // Código
+        {wch: 40}, // Descrição
+        {wch: 12}, // Quantidade
+        {wch: 15}, // Marca
+        {wch: 12}, // Cor
+        {wch: 45}  // Observações (Bem larga para caber o texto)
+    ];
+    ws['!cols'] = wscols;
+
+    XLSX.utils.book_append_sheet(wb, ws, "Pedido de Materiais");
+
+    // 3. Nome do arquivo com Data e Hora
     let agora = new Date();
-    let data = agora.toLocaleDateString('pt-BR').replace(/\//g, '-'); 
-    let nomeArquivo = `pedido_${fazenda}_${data}.xlsx`;
+    let dataStr = agora.toLocaleDateString('pt-BR').replace(/\//g, '-'); 
+    let horaStr = agora.getHours() + "h" + agora.getMinutes();
+    let nomeArquivo = `PEDIDO_${fazenda.replace(/\s+/g, '_')}_${dataStr}_${horaStr}.xlsx`;
 
+    // 4. Gera o download
     XLSX.writeFile(wb, nomeArquivo);
 }
 
