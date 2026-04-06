@@ -363,7 +363,9 @@ const contatosFazendas = {
     "Faz. Anda Luz": "timbauba@horita.com.br",
     "Faz. Sagarana": "sagarana@horita.com.br",
     "Faz. Requinte": "requinte@horita.com.br",
-    "Algodoeira": "algodoeira.vitoria@horita.com.br"
+    "Algodoeira": "algodoeira.vitoria@horita.com.br",
+    "Escritório Central": null, // Envio apenas para o compras
+    "Chácara": null             // Envio apenas para o compras
 };
 
 //  FUNÇÃO PARA GERAR O E-MAIL AUTOMÁTICO
@@ -391,10 +393,14 @@ function enviarEmail() {
         return;
     }
 
-    //  Configuração dos Destinatários (E-mail da Fazenda + Compras)
+    // 📩 Configuração dos Destinatários
     const emailFazenda = contatosFazendas[fazenda];
     const emailCompras = "compras@horita.com.br";
-    const destinatarios = `${emailFazenda}; ${emailCompras}`;
+
+    // LÓGICA: Se tiver e-mail da fazenda, concatena. Se não, usa só o de compras.
+    const destinatarios = emailFazenda 
+        ? `${emailFazenda}; ${emailCompras}` 
+        : emailCompras;
     
     const assunto = `Solicitação de Materiais - ${fazenda.toUpperCase()} (${aplicacao.toUpperCase()})`;
 
