@@ -31,10 +31,11 @@ function buscarProduto() {
         return;
     }
 
-    let filtrados = produtosFiltrados.filter(p =>
-        p.descricao.toLowerCase().includes(termo) ||
-        p.codigo.toString().includes(termo)
-    );
+    let termos = termo.split(" ");
+    let filtrados = produtosFiltrados.filter(p => {
+        let textoBusca = (p.descricao + p.codigo).toLowerCase();
+        return termos.every(t => textoBusca.includes(t));
+    });
 
     mostrarResultados(filtrados);
 }
@@ -43,6 +44,8 @@ function buscarProduto() {
 function mostrarResultados(listaProdutos) {
     let div = document.getElementById("resultados");
     div.innerHTML = "";
+    
+    indexSelecionado = -1; // <--- ADICIONE ISSO AQUI
 
     if (listaProdutos.length === 0) {
         div.innerHTML = "<div class='item' style='cursor:default;'>Nenhum produto encontrado...</div>";
@@ -52,7 +55,14 @@ function mostrarResultados(listaProdutos) {
     listaProdutos.forEach(p => {
         let item = document.createElement("div");
         item.className = "item";
-        item.innerText = `${p.descricao}`;
+        let termo = document.getElementById("busca").value.toLowerCase();
+
+        let descricao = p.descricao.replace(
+            new RegExp(`(${termo})`, "gi"),
+            `<span class="highlight">$1</span>`
+        );
+
+        item.innerHTML = descricao;
 
         item.onclick = () => {
             adicionarDireto(p);
@@ -64,7 +74,6 @@ function mostrarResultados(listaProdutos) {
     });
 }
 
-// 🔥 ADICIONE ESTA PARTE PARA ABRIR AO CLICAR
 document.getElementById("busca").addEventListener("click", function() {
     // Só abre se já houver produtos carregados da categoria
     if (produtosFiltrados.length > 0) {
@@ -426,4 +435,70 @@ function enviarEmail() {
     
     //  Abrir o cliente de e-mail
     window.location.href = mailtoLink;
+}
+
+let indexSelecionado = -1;
+
+// Ajuste no Listener de Teclado
+document.getElementById("busca").addEventListener("keydown", function(e) {
+    // Se o usuário apertar setas, cancelamos qualquer busca pendente para focar na navegação
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        clearTimeout(timeoutBusca); 
+    }
+
+    const itens = document.querySelectorAll("#resultados .item");
+    
+    // Se não houver itens ainda (porque o delay não acabou), não faz nada
+    if (!itens.length || itens[0].innerText.includes("Selecione") || itens[0].innerText.includes("Nenhum")) return;
+
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        indexSelecionado = (indexSelecionado + 1) % itens.length;
+        atualizarSelecao(itens);
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        indexSelecionado = (indexSelecionado - 1 + itens.length) % itens.length;
+        atualizarSelecao(itens);
+    } else if (e.key === "Enter") {
+        if (indexSelecionado > -1 && itens[indexSelecionado]) {
+            e.preventDefault();
+            itens[indexSelecionado].click();
+        }
+    }
+});
+
+// Função de Seleção mais Fluida
+function atualizarSelecao(itens) {
+    itens.forEach((item, i) => {
+        if (i === indexSelecionado) {
+            item.classList.add("ativo");
+            // O segredo do scroll suave:
+            item.scrollIntoView({
+                behavior: "smooth", // Movimento fluido
+                block: "nearest"    // Não pula a tela toda
+            });
+        } else {
+            item.classList.remove("ativo");
+        }
+    });
+}
+
+let timeoutBusca;
+
+function buscarProduto() {
+    clearTimeout(timeoutBusca);
+    
+    timeoutBusca = setTimeout(() => {
+        let termo = document.getElementById("busca").value.toLowerCase();
+        if (produtosFiltrados.length === 0) return;
+
+        let termos = termo.split(" ");
+        let filtrados = produtosFiltrados.filter(p => {
+            let texto = (p.descricao + p.codigo).toLowerCase();
+            return termos.every(t => texto.includes(t));
+        });
+
+        indexSelecionado = -1; // Reseta a posição ao filtrar novo termo
+        mostrarResultados(filtrados);
+    }, 150); // 150ms é imperceptível para o humano, mas alivia muito o processador
 }
