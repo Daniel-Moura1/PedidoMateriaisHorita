@@ -17,8 +17,8 @@ async function trocarCategoria() {
     if (!categoria) return;
 
     await carregarProdutos(categoria);
-    document.getElementById("busca").value = "";
-    // Removi a chamada automática aqui para o usuário clicar no campo e abrir
+    
+    buscarProduto(); 
 }
 
 //  BUSCAR / MOSTRAR AO CLICAR
