@@ -468,15 +468,29 @@ function atualizarContador() {
 }
 
 // ============================================================
-//  LIMPAR SISTEMA
+//  LIMPAR SISTEMA (Tudo: Lista, Inputs e Resultados)
 // ============================================================
 function refreshSistema() {
-    if (confirm("Deseja realmente limpar toda a lista?")) {
+    if (confirm("Deseja realmente limpar toda a lista e os dados preenchidos?")) {
+        // 1. Limpa os dados da memória (Variáveis)
         lista = [];
-        atualizarTabela();
-        document.getElementById("busca").value = "";
-        document.getElementById("resultados").innerHTML = "";
+        indexSelecionado = -1;
+
+        // 2. Limpa o LocalStorage (Persistência)
         localStorage.removeItem(STORAGE_KEY);
+
+        // 3. Limpa os Campos de Texto e Selects
+        document.getElementById("fazenda").value = "";
+        document.getElementById("aplicacao").value = "";
+        document.getElementById("busca").value = "";
+        document.getElementById("categoria").value = "";
+
+        // 4. Limpa os Resultados Visuais (Busca e Tabela)
+        document.getElementById("resultados").innerHTML = "";
+        atualizarTabela();
+
+        // Opcional: Dá foco no primeiro campo para começar de novo
+        document.getElementById("fazenda").focus();
     }
 }
 
