@@ -67,12 +67,12 @@
             <div class="campo-grupo" style="position: relative; flex-grow: 1;">
                 <label for="busca">Produto:</label>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="busca" 
-                        oninput="buscarProduto()" 
-                        onclick="this.select()" 
-                        placeholder="Digite o nome ou código..." 
+                    <input type="text" id="busca"
+                        oninput="buscarProduto()"
+                        onclick="this.select()"
+                        placeholder="Digite o nome ou código..."
                         autocomplete="off" style="flex-grow: 1;">
-                    
+
                     <button type="button" onclick="adicionarManual()" class="btn-manual">
                         + Item Manual
                     </button>
@@ -95,16 +95,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                </tbody>
             </table>
         </section>
 
-    <footer class="acoes-container">
-        <button class="btn-excel" onclick="exportarExcel()">Exportar Excel</button>
-        <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button> 
-        <button class="btn-email" onclick="enviarEmail()">Enviar E-mail</button>
-        <button class="btn-refresh" onclick="refreshSistema()">Limpar</button>
-    </footer>
+        <footer class="acoes-container">
+            <button class="btn-excel" onclick="exportarExcel()">Exportar Excel</button>
+            <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
+            <button class="btn-email" onclick="enviarEmail()">Enviar E-mail</button>
+            <button class="btn-refresh" onclick="refreshSistema()">Limpar</button>
+            <span id="contador-itens"></span>
+        </footer>
     </main>
 
     <script src="script.js"></script>
