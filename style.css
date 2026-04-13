@@ -53,6 +53,7 @@ h2 {
 /* FILTROS E BUSCA */
 .filtros-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
     background: var(--white);
     padding: 20px 30px;
@@ -66,6 +67,7 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
 }
 
 .campo-grupo label {
@@ -96,20 +98,17 @@ input:focus, select:focus {
     top: calc(100% + 6px);
     left: 0;
     width: 100%;
-    
     background: var(--white);
     border: 1px solid #dcdcdc;
     border-radius: 10px;
     max-height: 260px;
     overflow-y: auto;
     z-index: 999;
-
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     animation: fadeIn 0.12s ease-in-out;
-    will-change: transform, opacity; /* Avisa o navegador para otimizar */
+    will-change: transform, opacity;
 }
 
-/* Scroll estilo sistema */
 #resultados::-webkit-scrollbar {
     width: 6px;
 }
@@ -125,28 +124,30 @@ input:focus, select:focus {
     font-size: 13.5px;
     border-bottom: 1px solid #f1f1f1;
     cursor: pointer;
-    transition: all 0.15s ease;
-    transition: background 0.1s ease-out; /* Transição mais rápida */
+    transition: background 0.1s ease-out;
 }
 
-/* Hover estilo SAP */
 .item:hover {
     background: #f4f6ff;
     color: var(--primary);
     padding-left: 18px;
 }
 
-/* ITEM SELECIONADO (teclado) */
+/* ITEM SELECIONADO POR TECLADO */
 .item.ativo {
-    background: var(--primary);
-    color: white;
-    font-weight: 600;
     background-color: var(--primary) !important;
     color: white !important;
-    border-left: 5px solid var(--primary-dark); /* Feedback visual extra */
+    font-weight: bold;
+    border-left: 6px solid var(--primary-dark);
+    padding-left: 20px;
 }
 
-/* Destaque da busca */
+/* DESTAQUE DE BUSCA */
+.highlight {
+    background: #fff176;
+    border-radius: 2px;
+    padding: 0 1px;
+}
 
 /* TABELA DE MATERIAIS */
 .tabela-container {
@@ -184,21 +185,59 @@ tbody tr:hover {
     background-color: #f6f8ff;
 }
 
-/* INPUTS DENTRO DA TABELA (COM DESTAQUE) */
+/* ANIMAÇÃO DE LINHA ADICIONADA */
+@keyframes linhaEntrada {
+    0%   { background-color: #70a7fa; }
+    100% { background-color: transparent; }
+}
+
+tbody tr.linha-nova {
+    animation: linhaEntrada 1.2s ease-out forwards;
+}
+
+/* ESTADO VAZIO DA TABELA */
+.estado-vazio {
+    text-align: center;
+    padding: 50px 20px !important;
+    color: var(--text-muted);
+}
+
+.estado-vazio-icone {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.estado-vazio-titulo {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: var(--text-main);
+}
+
+.estado-vazio-subtitulo {
+    font-size: 13px;
+}
+
+/* INPUTS DENTRO DA TABELA */
 td input {
     width: 100%;
-    border: 1px solid #f0f0f0; /* Borda bem suave para indicar campo */
-    background: #fdfdfd; /* Fundo levemente diferente para convidar ao clique */
+    border: 1px solid #f0f0f0;
+    background: #fdfdfd;
     padding: 8px 10px;
     border-radius: 6px;
     font-size: 14px;
+    text-transform: uppercase;
     transition: 0.2s;
+}
+
+td input::placeholder {
+    text-transform: none;
 }
 
 td input:hover {
     border-color: var(--border);
     background: var(--white);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 td input:focus {
@@ -208,7 +247,7 @@ td input:focus {
     outline: none;
 }
 
-/* REGRAS DE OBRIGATORIEDADE (QUANTIDADE) */
+/* CAMPO QUANTIDADE (OBRIGATÓRIO) */
 .input-qtd {
     font-weight: bold;
     color: var(--primary);
@@ -220,14 +259,20 @@ td input:focus {
     border-bottom: 2px solid #ff4d4d !important;
 }
 
-/* Destaque de obrigatoriedade para a Descrição Manual */
+/* DESCRIÇÃO MANUAL (OBRIGATÓRIA) */
 td input[oninput*="descricao"]:placeholder-shown {
     background-color: #fff5f5 !important;
     border: 1px solid #ffcccc !important;
     border-bottom: 2px solid #ff4d4d !important;
 }
 
-/* BOTÃO DE EXCLUIR (AÇÃO NA TABELA) */
+/* Cor do texto na descrição manual */
+td input[oninput*="descricao"] {
+    font-weight: 600;
+    color: #897cff;
+}
+
+/* BOTÃO DE EXCLUIR */
 .btn-excluir {
     background: #fff;
     border: 1px solid #ffcccc;
@@ -251,27 +296,45 @@ td input[oninput*="descricao"]:placeholder-shown {
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
 }
 
-/* BOTÕES DE AÇÃO - CONTAINER */
+/* RODAPÉ DE AÇÕES */
 .acoes-container {
     margin-top: 30px;
     display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     align-items: center;
 }
 
-/* BOTÃO EXPORTAR E REFRESH */
-.btn-excel, .btn-refresh {
+/* CONTADOR DE ITENS */
+#contador-itens {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* TODOS OS BOTÕES DO RODAPÉ */
+.acoes-container button {
+    flex: 1;
+    max-width: 220px;
+    min-width: 130px;
+    height: 45px;
+    padding: 0 20px;
     border-radius: 10px;
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
     border: 2px solid transparent;
 }
 
+/* BOTÃO EXPORTAR EXCEL */
 .btn-excel {
     background-color: var(--success);
     color: var(--white);
@@ -284,21 +347,55 @@ td input[oninput*="descricao"]:placeholder-shown {
     box-shadow: 0 6px 15px rgba(25, 135, 84, 0.3);
 }
 
+/* BOTÃO PDF */
+.btn-pdf {
+    background-color: #e74c3c;
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+.btn-pdf:hover {
+    background-color: #c0392b;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* BOTÃO E-MAIL */
+.btn-email {
+    background-color: var(--primary);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(40, 6, 231, 0.2);
+}
+
+.btn-email:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(40, 6, 231, 0.3);
+}
+
+/* BOTÃO LIMPAR (Ajustado para ter presença visual) */
 .btn-refresh {
-    background-color: transparent;
+    background-color: #f8f9fa; /* Fundo leve para dar corpo ao botão */
     color: #6c757d;
-    border: 2px solid #dee2e6;
+    border: 2px solid #dee2e6 !important; /* Borda definida para parecer um botão real */
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.1); /* Sombra suave para profundidade */
 }
 
 .btn-refresh:hover {
     background-color: #fff;
-    color: var(--danger);
-    border-color: var(--danger);
+    color: #dc3545; /* Cor de perigo/limpar */
+    border-color: #dc3545 !important;
     transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(220, 53, 69, 0.1);
+    box-shadow: 0 6px 15px rgba(220, 53, 69, 0.15);
 }
 
-/* Estilo do botão de Item Manual */
+/* Feedback visual ao clicar */
+.btn-refresh:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* BOTÃO ITEM MANUAL */
 .btn-manual {
     background-color: var(--white);
     color: var(--primary);
@@ -316,7 +413,7 @@ td input[oninput*="descricao"]:placeholder-shown {
     color: var(--white);
 }
 
-/* Estilização do Código na Tabela */
+/* BADGE DE CÓDIGO */
 .badge-codigo {
     font-size: 11px;
     background: #f0f0f0;
@@ -327,23 +424,7 @@ td input[oninput*="descricao"]:placeholder-shown {
     display: inline-block;
 }
 
-/* Destaque para o campo de descrição quando for manual */
-td input[oninput*="descricao"] {
-    font-weight: 600;
-    color: #897cff; 
-}
-
-/* Faz com que tudo digitado nos inputs da tabela apareça em maiúsculo na hora */
-td input {
-    text-transform: uppercase;
-}
-
-/* Garante que os placeholders não fiquem em maiúsculo (opcional) */
-td input::placeholder {
-    text-transform: none;
-}
-
-/* Adicione isso ao seu arquivo CSS */
+/* CAMPO APLICAÇÃO */
 #aplicacao {
     text-transform: uppercase;
 }
@@ -352,68 +433,42 @@ td input::placeholder {
     text-transform: none;
 }
 
-/* BOTÃO PDF */
-.btn-pdf {
-    background-color: #e74c3c; /* Vermelho para PDF */
-    color: var(--white);
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    border: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
-}
+/* RESPONSIVIDADE */
+@media (max-width: 900px) {
+    body {
+        padding: 20px;
+    }
 
-.btn-pdf:hover {
-    background-color: #c0392b;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
-}
+    .filtros-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-/* PADRONIZAÇÃO DOS BOTÕES (TAMANHO IGUAL) */
-.acoes-container {
-    margin-top: 30px;
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
+    .campo-grupo {
+        width: 100%;
+    }
 
-/* TODOS OS BOTÕES IGUAIS */
-.acoes-container button {
-    flex: 1; /* todos com mesma largura */
-    max-width: 220px; /* evita botão gigante */
-    height: 45px;
-    padding: 0 20px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center; /* centraliza texto */
-    gap: 8px;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
+    .campo-grupo input,
+    .campo-grupo select {
+        width: 100% !important;
+    }
 
-/* BOTÃO E-MAIL */
-.btn-email {
-    background-color: var(--primary);
-    color: var(--white);
-    box-shadow: 0 4px 12px rgba(40, 6, 231, 0.2);
-}
+    .acoes-container {
+        justify-content: stretch;
+    }
 
-.btn-email:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(40, 6, 231, 0.3);
-}
+    .acoes-container button {
+        max-width: none;
+    }
 
-.item.ativo {
-    border-left: 6px solid var(--primary-dark) !important;
-    padding-left: 20px; /* Dá um leve recuo no texto quando selecionado */
-    background-color: var(--primary) !important;
-    color: white !important;
-    font-weight: bold;
+    #contador-itens {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+    }
+
+    th, td {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
 }
