@@ -7,6 +7,21 @@ let indexSelecionado = -1;
 let timeoutBusca;
 
 // ============================================================
+//  MAPA DE CATEGORIAS (mesmo valor do <select> do HTML)
+// ============================================================
+const CATEGORIAS = {
+    "ferramenta_manual": "Ferramentas Manuais",
+    "construcao":        "Mats. Construção",
+    "eletrico":          "Mats. Elétricos",
+    "equipamentos":      "Mats. Equipamentos",
+    "ferragem":          "Mats. Ferragens",
+    "hidraulico":        "Mats. Hidráulicos",
+    "jardinagem":        "Mats. Jardinagens",
+    "pintura":           "Mats. Pinturas",
+    "pecas_acessorios":  "Mats. Uso na Oficina"
+};
+
+// ============================================================
 //  PERSISTÊNCIA (localStorage)
 // ============================================================
 const STORAGE_KEY = "horita_pedido_v1";
@@ -78,8 +93,8 @@ async function trocarCategoria() {
 function buscarProduto() {
     clearTimeout(timeoutBusca);
 
-    timeoutBusca = setTimeout(() => {
-        let termo = document.getElementById("busca").value.toLowerCase();
+    timeoutBusca = setTimeout(async () => {
+        const termo = document.getElementById("busca").value.toLowerCase().trim();
 
         if (produtosFiltrados.length === 0) {
             document.getElementById("resultados").innerHTML =
@@ -87,38 +102,142 @@ function buscarProduto() {
             return;
         }
 
-        let termos = termo.split(" ");
-        let filtrados = produtosFiltrados.filter(p => {
-            let textoBusca = (p.descricao + p.codigo).toLowerCase();
+        // Não busca com termo muito curto para evitar resultados ruins
+        if (termo.length < 2) {
+            document.getElementById("resultados").innerHTML = "";
+            return;
+        }
+
+        const termos = termo.split(" ").filter(t => t.length > 0);
+        const filtrados = produtosFiltrados.filter(p => {
+            const textoBusca = (p.descricao + " " + p.codigo).toLowerCase();
             return termos.every(t => textoBusca.includes(t));
         });
 
         indexSelecionado = -1;
-        mostrarResultados(filtrados);
+
+        if (filtrados.length > 0) {
+            // Resultados normais na categoria atual
+            mostrarResultados(filtrados, null);
+        } else {
+            // Nenhum resultado: busca nas outras categorias
+            mostrarResultados([], null); // mostra "procurando..." enquanto busca
+            await buscarEmOutrasCategorias(termo, termos);
+        }
     }, 150);
 }
 
 // ============================================================
-//  MOSTRAR RESULTADOS DA BUSCA
+//  BUSCA EM OUTRAS CATEGORIAS (sugestão cruzada)
 // ============================================================
-function mostrarResultados(listaProdutos) {
-    let div = document.getElementById("resultados");
+async function buscarEmOutrasCategorias(termo, termos) {
+    const div = document.getElementById("resultados");
+    const categoriaAtual = document.getElementById("categoria").value;
+
+    // Feedback visual imediato
+    div.innerHTML = `<div class='item item-buscando' style='cursor:default; color: var(--text-muted); font-style: italic;'>
+        🔍 Procurando em outras categorias...
+    </div>`;
+
+    const sugestoes = []; // { produto, categoriaKey, categoriaNome }
+
+    const promessas = Object.entries(CATEGORIAS)
+        .filter(([key]) => key !== categoriaAtual)
+        .map(async ([key, nome]) => {
+            try {
+                const res = await fetch(key + ".json");
+                if (!res.ok) return;
+                const produtos = await res.json();
+                const encontrados = produtos.filter(p => {
+                    const textoBusca = (p.descricao + " " + p.codigo).toLowerCase();
+                    return termos.every(t => textoBusca.includes(t));
+                });
+                encontrados.forEach(p => sugestoes.push({ produto: p, categoriaKey: key, categoriaNome: nome }));
+            } catch {
+                // Ignora categorias que falharem silenciosamente
+            }
+        });
+
+    await Promise.all(promessas);
+
     div.innerHTML = "";
 
-    if (listaProdutos.length === 0) {
-        div.innerHTML = "<div class='item' style='cursor:default;'>Nenhum produto encontrado...</div>";
+    if (sugestoes.length === 0) {
+        div.innerHTML = "<div class='item' style='cursor:default;'>Nenhum produto encontrado em nenhuma categoria.</div>";
         return;
     }
 
-    let termo = document.getElementById("busca").value.toLowerCase();
-    // Escapa caracteres especiais do termo para uso em RegExp
+    // Cabeçalho de sugestão
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "item-cabecalho-sugestao";
+    cabecalho.textContent = `Não encontrado aqui — veja sugestões de outras categorias:`;
+    div.appendChild(cabecalho);
+
+    // Agrupa por categoria para exibir separadores
+    const porCategoria = {};
+    sugestoes.forEach(s => {
+        if (!porCategoria[s.categoriaNome]) porCategoria[s.categoriaNome] = [];
+        porCategoria[s.categoriaNome].push(s);
+    });
+
+    const termoEscapado = termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    Object.entries(porCategoria).forEach(([nomeCat, itens]) => {
+        // Separador de categoria
+        const sep = document.createElement("div");
+        sep.className = "item-separador-categoria";
+        sep.textContent = nomeCat;
+        div.appendChild(sep);
+
+        itens.forEach(({ produto, categoriaKey, categoriaNome }) => {
+            const item = document.createElement("div");
+            item.className = "item item-sugestao";
+
+            let descricaoSegura = sanitizar(produto.descricao);
+            if (termoEscapado) {
+                descricaoSegura = descricaoSegura.replace(
+                    new RegExp(`(${termoEscapado})`, "gi"),
+                    `<span class="highlight">$1</span>`
+                );
+            }
+
+            item.innerHTML = descricaoSegura;
+
+            item.onclick = async () => {
+                // Troca a categoria automaticamente e adiciona o produto
+                const selectCategoria = document.getElementById("categoria");
+                selectCategoria.value = categoriaKey;
+                await carregarProdutos(categoriaKey);
+
+                adicionarDireto(produto);
+                div.innerHTML = "";
+                document.getElementById("busca").value = "";
+            };
+
+            div.appendChild(item);
+        });
+    });
+}
+
+// ============================================================
+//  MOSTRAR RESULTADOS DA BUSCA (categoria atual)
+// ============================================================
+function mostrarResultados(listaProdutos, _ignorado) {
+    const div = document.getElementById("resultados");
+    div.innerHTML = "";
+
+    if (listaProdutos.length === 0) {
+        // Não exibe "nenhum encontrado" aqui pois buscarEmOutrasCategorias assume o controle
+        return;
+    }
+
+    const termo = document.getElementById("busca").value.toLowerCase();
     const termoEscapado = termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     listaProdutos.forEach(p => {
-        let item = document.createElement("div");
+        const item = document.createElement("div");
         item.className = "item";
 
-        // Sanitiza primeiro, depois aplica o highlight
         let descricaoSegura = sanitizar(p.descricao);
         if (termoEscapado) {
             descricaoSegura = descricaoSegura.replace(
@@ -156,7 +275,7 @@ document.getElementById("busca").addEventListener("keydown", function (e) {
         clearTimeout(timeoutBusca);
     }
 
-    const itens = document.querySelectorAll("#resultados .item");
+    const itens = document.querySelectorAll("#resultados .item:not(.item-buscando)");
 
     if (!itens.length ||
         itens[0].innerText.includes("Selecione") ||
@@ -210,7 +329,7 @@ function atualizarSelecao(itens) {
 //  ADICIONAR PRODUTO DA BUSCA NA TABELA
 // ============================================================
 function adicionarDireto(produto) {
-    let existente = lista.find(item => item.codigo === produto.codigo);
+    const existente = lista.find(item => item.codigo === produto.codigo);
 
     if (existente) {
         alert("Este item já foi adicionado à lista!");
@@ -377,7 +496,7 @@ function validarParaExportar() {
         return false;
     }
     const temErro = lista.some(item => {
-        const semQtd       = !item.Quantidade || item.Quantidade.trim() === "";
+        const semQtd        = !item.Quantidade || item.Quantidade.trim() === "";
         const manualSemDesc = item.codigo === "SEM CADASTRO" && (!item.descricao || item.descricao.trim() === "");
         return semQtd || manualSemDesc;
     });
