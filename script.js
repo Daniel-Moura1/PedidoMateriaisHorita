@@ -1,681 +1,517 @@
-// ============================================================
-//  VARIÁVEIS GLOBAIS
-// ============================================================
-let produtosFiltrados = [];
-let lista = [];
-let indexSelecionado = -1;
-let timeoutBusca;
-
-// ============================================================
-//  MAPA DE CATEGORIAS (mesmo valor do <select> do HTML)
-// ============================================================
-const CATEGORIAS = {
-    "ferramenta_manual": "Ferramentas Manuais",
-    "construcao":        "Mats. Construção",
-    "eletrico":          "Mats. Elétricos",
-    "equipamentos":      "Mats. Equipamentos",
-    "ferragem":          "Mats. Ferragens",
-    "hidraulico":        "Mats. Hidráulicos",
-    "jardinagem":        "Mats. Jardinagens",
-    "pintura":           "Mats. Pinturas",
-    "pecas_acessorios":  "Mats. Uso na Oficina"
-};
-
-// ============================================================
-//  PERSISTÊNCIA (localStorage)
-// ============================================================
-const STORAGE_KEY = "horita_pedido_v1";
-
-function salvarLocal() {
-    const estado = {
-        fazenda:   document.getElementById("fazenda").value,
-        aplicacao: document.getElementById("aplicacao").value,
-        lista
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+/* VARIÁVEIS DE CORES - Estilo Corporativo */
+:root {
+    --primary: #2806e7;
+    --primary-dark: #1e04b5;
+    --success: #198754;
+    --bg-body: #f4f7f6;
+    --text-main: #333;
+    --text-muted: #666;
+    --white: #ffffff;
+    --border: #dee2e6;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --danger: #dc3545;
 }
 
-function carregarLocal() {
-    try {
-        const salvo = localStorage.getItem(STORAGE_KEY);
-        if (!salvo) return;
+/* RESET E BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        const estado = JSON.parse(salvo);
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 40px;
+}
 
-        if (estado.fazenda)
-            document.getElementById("fazenda").value = estado.fazenda;
-        if (estado.aplicacao)
-            document.getElementById("aplicacao").value = estado.aplicacao;
-        if (Array.isArray(estado.lista) && estado.lista.length > 0) {
-            lista = estado.lista;
-            atualizarTabela();
-        }
-    } catch (e) {
-        localStorage.removeItem(STORAGE_KEY);
+/* HEADER */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--white);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.logo {
+    max-width: 150px;
+    height: auto;
+}
+
+h2 {
+    color: var(--primary);
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* FILTROS E BUSCA */
+.filtros-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: var(--white);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    align-items: flex-end;
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.campo-grupo label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+input, select {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fdfdfd;
+    transition: all 0.2s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(40, 6, 231, 0.1);
+}
+
+/* RESULTADOS FLUTUANTES */
+#resultados {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    background: var(--white);
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 999;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.12s ease-in-out;
+    will-change: transform, opacity;
+}
+
+#resultados::-webkit-scrollbar {
+    width: 6px;
+}
+
+#resultados::-webkit-scrollbar-thumb {
+    background: #cfcfcf;
+    border-radius: 10px;
+}
+
+/* ITEM */
+.item {
+    padding: 12px 14px;
+    font-size: 13.5px;
+    border-bottom: 1px solid #f1f1f1;
+    cursor: pointer;
+    transition: background 0.1s ease-out;
+}
+
+.item:hover {
+    background: #f4f6ff;
+    color: var(--primary);
+    padding-left: 18px;
+}
+
+/* ITEM SELECIONADO POR TECLADO */
+.item.ativo {
+    background-color: var(--primary) !important;
+    color: white !important;
+    font-weight: bold;
+    border-left: 6px solid var(--primary-dark);
+    padding-left: 20px;
+}
+
+/* DESTAQUE DE BUSCA */
+.highlight {
+    background: #fff176;
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+/* TABELA DE MATERIAIS */
+.tabela-container {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: var(--primary);
+    color: var(--white);
+    text-align: left;
+    padding: 15px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+tbody tr:hover {
+    background-color: #f6f8ff;
+}
+
+/* ANIMAÇÃO DE LINHA ADICIONADA */
+@keyframes linhaEntrada {
+    0%   { background-color: #70a7fa; }
+    100% { background-color: transparent; }
+}
+
+tbody tr.linha-nova {
+    animation: linhaEntrada 1.2s ease-out forwards;
+}
+
+/* ESTADO VAZIO DA TABELA */
+.estado-vazio {
+    text-align: center;
+    padding: 50px 20px !important;
+    color: var(--text-muted);
+}
+
+.estado-vazio-icone {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.estado-vazio-titulo {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: var(--text-main);
+}
+
+.estado-vazio-subtitulo {
+    font-size: 13px;
+}
+
+/* INPUTS DENTRO DA TABELA */
+td input {
+    width: 100%;
+    border: 1px solid #f0f0f0;
+    background: #fdfdfd;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-transform: uppercase;
+    transition: 0.2s;
+}
+
+td input::placeholder {
+    text-transform: none;
+}
+
+td input:hover {
+    border-color: var(--border);
+    background: var(--white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+td input:focus {
+    background: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(40, 6, 231, 0.05);
+    outline: none;
+}
+
+/* CAMPO QUANTIDADE (OBRIGATÓRIO) */
+.input-qtd {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.input-qtd:placeholder-shown {
+    background-color: #fff5f5 !important;
+    border: 1px solid #ffcccc !important;
+    border-bottom: 2px solid #ff4d4d !important;
+}
+
+/* DESCRIÇÃO MANUAL (OBRIGATÓRIA) */
+td input[oninput*="descricao"]:placeholder-shown {
+    background-color: #fff5f5 !important;
+    border: 1px solid #ffcccc !important;
+    border-bottom: 2px solid #ff4d4d !important;
+}
+
+/* Cor do texto na descrição manual */
+td input[oninput*="descricao"] {
+    font-weight: 600;
+    color: #897cff;
+}
+
+/* BOTÃO DE EXCLUIR */
+.btn-excluir {
+    background: #fff;
+    border: 1px solid #ffcccc;
+    color: #dc3545;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.btn-excluir:hover {
+    background: #fc959f;
+    color: #fff;
+    border-color: #dc3545;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+}
+
+/* RODAPÉ DE AÇÕES */
+.acoes-container {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+/* CONTADOR DE ITENS */
+#contador-itens {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* TODOS OS BOTÕES DO RODAPÉ */
+.acoes-container button {
+    flex: 1;
+    max-width: 220px;
+    min-width: 130px;
+    height: 45px;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border: 2px solid transparent;
+}
+
+/* BOTÃO EXPORTAR EXCEL */
+.btn-excel {
+    background-color: var(--success);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+}
+
+.btn-excel:hover {
+    background-color: #146c43;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(25, 135, 84, 0.3);
+}
+
+/* BOTÃO PDF */
+.btn-pdf {
+    background-color: #e74c3c;
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+.btn-pdf:hover {
+    background-color: #c0392b;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* BOTÃO E-MAIL */
+.btn-email {
+    background-color: var(--primary);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(40, 6, 231, 0.2);
+}
+
+.btn-email:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(40, 6, 231, 0.3);
+}
+
+/* BOTÃO LIMPAR (Ajustado para ter presença visual) */
+.btn-refresh {
+    background-color: #f8f9fa; /* Fundo leve para dar corpo ao botão */
+    color: #6c757d;
+    border: 2px solid #dee2e6 !important; /* Borda definida para parecer um botão real */
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.1); /* Sombra suave para profundidade */
+}
+
+.btn-refresh:hover {
+    background-color: #fff;
+    color: #dc3545; /* Cor de perigo/limpar */
+    border-color: #dc3545 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(220, 53, 69, 0.15);
+}
+
+/* Feedback visual ao clicar */
+.btn-refresh:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* BOTÃO ITEM MANUAL */
+.btn-manual {
+    background-color: var(--white);
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btn-manual:hover {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+/* BADGE DE CÓDIGO */
+.badge-codigo {
+    font-size: 11px;
+    background: #f0f0f0;
+    padding: 3px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* CAMPO APLICAÇÃO */
+#aplicacao {
+    text-transform: uppercase;
+}
+
+#aplicacao::placeholder {
+    text-transform: none;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 900px) {
+    body {
+        padding: 20px;
+    }
+
+    .filtros-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .campo-grupo {
+        width: 100%;
+    }
+
+    .campo-grupo input,
+    .campo-grupo select {
+        width: 100% !important;
+    }
+
+    .acoes-container {
+        justify-content: stretch;
+    }
+
+    .acoes-container button {
+        max-width: none;
+    }
+
+    #contador-itens {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+    }
+
+    th, td {
+        font-size: 12px;
+        padding: 8px 10px;
     }
 }
+/* ============================================================
+   SUGESTÃO DE OUTRAS CATEGORIAS
+   ============================================================ */
 
-// ============================================================
-//  SEGURANÇA — SANITIZAR TEXTO PARA innerHTML
-// ============================================================
-function sanitizar(texto) {
-    const div = document.createElement("div");
-    div.textContent = texto ?? "";
-    return div.innerHTML;
+/* Cabeçalho explicativo */
+.item-cabecalho-sugestao {
+    padding: 10px 14px 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #f30505;
+    background: #ffc9c9;
+    border-bottom: 1px solid #fde8c0;
+    cursor: default;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
-// ============================================================
-//  CARREGAR JSON
-// ============================================================
-async function carregarProdutos(categoria) {
-    try {
-        let response = await fetch(categoria + ".json");
-        produtosFiltrados = await response.json();
-    } catch (erro) {
-        alert("Erro ao carregar JSON. Use o Live Server do VS Code para testar.");
-    }
+/* Separador de categoria dentro das sugestões */
+.item-separador-categoria {
+    padding: 6px 14px 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--primary);
+    background: #f4f6ff;
+    border-top: 1px solid #e8ecff;
+    border-bottom: 1px solid #e8ecff;
+    cursor: default;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
-// ============================================================
-//  TROCAR CATEGORIA
-// ============================================================
-async function trocarCategoria() {
-    let categoria = document.getElementById("categoria").value;
-    if (!categoria) return;
-
-    await carregarProdutos(categoria);
-    buscarProduto();
+/* Item de sugestão — visual levemente diferente do item normal */
+.item.item-sugestao {
+    padding-left: 20px;
+    color: #444;
+    background: #fdfeff;
 }
 
-// ============================================================
-//  BUSCAR PRODUTO (com debounce de 150ms)
-// ============================================================
-function buscarProduto() {
-    clearTimeout(timeoutBusca);
-
-    timeoutBusca = setTimeout(async () => {
-        const termo = document.getElementById("busca").value.toLowerCase().trim();
-
-        if (produtosFiltrados.length === 0) {
-            document.getElementById("resultados").innerHTML =
-                "<div class='item' style='cursor:default; color:orange;'>Selecione uma categoria primeiro!</div>";
-            return;
-        }
-
-        // Não busca com termo muito curto para evitar resultados ruins
-        if (termo.length < 2) {
-            document.getElementById("resultados").innerHTML = "";
-            return;
-        }
-
-        const termos = termo.split(" ").filter(t => t.length > 0);
-        const filtrados = produtosFiltrados.filter(p => {
-            const textoBusca = (p.descricao + " " + p.codigo).toLowerCase();
-            return termos.every(t => textoBusca.includes(t));
-        });
-
-        indexSelecionado = -1;
-
-        if (filtrados.length > 0) {
-            // Resultados normais na categoria atual
-            mostrarResultados(filtrados, null);
-        } else {
-            // Nenhum resultado: busca nas outras categorias
-            mostrarResultados([], null); // mostra "procurando..." enquanto busca
-            await buscarEmOutrasCategorias(termo, termos);
-        }
-    }, 150);
+.item.item-sugestao:hover {
+    background: #eef2ff;
+    color: var(--primary);
+    padding-left: 24px;
 }
-
-// ============================================================
-//  BUSCA EM OUTRAS CATEGORIAS (sugestão cruzada)
-// ============================================================
-async function buscarEmOutrasCategorias(termo, termos) {
-    const div = document.getElementById("resultados");
-    const categoriaAtual = document.getElementById("categoria").value;
-
-    // Feedback visual imediato
-    div.innerHTML = `<div class='item item-buscando' style='cursor:default; color: var(--text-muted); font-style: italic;'>
-        🔍 Procurando em outras categorias...
-    </div>`;
-
-    const sugestoes = []; // { produto, categoriaKey, categoriaNome }
-
-    const promessas = Object.entries(CATEGORIAS)
-        .filter(([key]) => key !== categoriaAtual)
-        .map(async ([key, nome]) => {
-            try {
-                const res = await fetch(key + ".json");
-                if (!res.ok) return;
-                const produtos = await res.json();
-                const encontrados = produtos.filter(p => {
-                    const textoBusca = (p.descricao + " " + p.codigo).toLowerCase();
-                    return termos.every(t => textoBusca.includes(t));
-                });
-                encontrados.forEach(p => sugestoes.push({ produto: p, categoriaKey: key, categoriaNome: nome }));
-            } catch {
-                // Ignora categorias que falharem silenciosamente
-            }
-        });
-
-    await Promise.all(promessas);
-
-    div.innerHTML = "";
-
-    if (sugestoes.length === 0) {
-        div.innerHTML = "<div class='item' style='cursor:default;'>Nenhum produto encontrado em nenhuma categoria.</div>";
-        return;
-    }
-
-    // Cabeçalho de sugestão
-    const cabecalho = document.createElement("div");
-    cabecalho.className = "item-cabecalho-sugestao";
-    cabecalho.textContent = `Não encontrado aqui — veja sugestões de outras categorias:`;
-    div.appendChild(cabecalho);
-
-    // Agrupa por categoria para exibir separadores
-    const porCategoria = {};
-    sugestoes.forEach(s => {
-        if (!porCategoria[s.categoriaNome]) porCategoria[s.categoriaNome] = [];
-        porCategoria[s.categoriaNome].push(s);
-    });
-
-    const termoEscapado = termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-    Object.entries(porCategoria).forEach(([nomeCat, itens]) => {
-        // Separador de categoria
-        const sep = document.createElement("div");
-        sep.className = "item-separador-categoria";
-        sep.textContent = nomeCat;
-        div.appendChild(sep);
-
-        itens.forEach(({ produto, categoriaKey, categoriaNome }) => {
-            const item = document.createElement("div");
-            item.className = "item item-sugestao";
-
-            let descricaoSegura = sanitizar(produto.descricao);
-            if (termoEscapado) {
-                descricaoSegura = descricaoSegura.replace(
-                    new RegExp(`(${termoEscapado})`, "gi"),
-                    `<span class="highlight">$1</span>`
-                );
-            }
-
-            item.innerHTML = descricaoSegura;
-
-            item.onclick = async () => {
-                // Troca a categoria automaticamente e adiciona o produto
-                const selectCategoria = document.getElementById("categoria");
-                selectCategoria.value = categoriaKey;
-                await carregarProdutos(categoriaKey);
-
-                adicionarDireto(produto);
-                div.innerHTML = "";
-                document.getElementById("busca").value = "";
-            };
-
-            div.appendChild(item);
-        });
-    });
-}
-
-// ============================================================
-//  MOSTRAR RESULTADOS DA BUSCA (categoria atual)
-// ============================================================
-function mostrarResultados(listaProdutos, _ignorado) {
-    const div = document.getElementById("resultados");
-    div.innerHTML = "";
-
-    if (listaProdutos.length === 0) {
-        // Não exibe "nenhum encontrado" aqui pois buscarEmOutrasCategorias assume o controle
-        return;
-    }
-
-    const termo = document.getElementById("busca").value.toLowerCase();
-    const termoEscapado = termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-    listaProdutos.forEach(p => {
-        const item = document.createElement("div");
-        item.className = "item";
-
-        let descricaoSegura = sanitizar(p.descricao);
-        if (termoEscapado) {
-            descricaoSegura = descricaoSegura.replace(
-                new RegExp(`(${termoEscapado})`, "gi"),
-                `<span class="highlight">$1</span>`
-            );
-        }
-
-        item.innerHTML = descricaoSegura;
-
-        item.onclick = () => {
-            adicionarDireto(p);
-            div.innerHTML = "";
-            document.getElementById("busca").value = "";
-        };
-
-        div.appendChild(item);
-    });
-}
-
-// ============================================================
-//  EVENTOS DO CAMPO DE BUSCA
-// ============================================================
-document.getElementById("busca").addEventListener("click", function () {
-    if (produtosFiltrados.length > 0) {
-        buscarProduto();
-    } else {
-        document.getElementById("resultados").innerHTML =
-            "<div class='item' style='cursor:default; color:red;'>Selecione uma categoria primeiro!</div>";
-    }
-});
-
-document.getElementById("busca").addEventListener("keydown", function (e) {
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        clearTimeout(timeoutBusca);
-    }
-
-    const itens = document.querySelectorAll("#resultados .item:not(.item-buscando)");
-
-    if (!itens.length ||
-        itens[0].innerText.includes("Selecione") ||
-        itens[0].innerText.includes("Nenhum")) return;
-
-    if (e.key === "ArrowDown") {
-        e.preventDefault();
-        indexSelecionado = (indexSelecionado + 1) % itens.length;
-        atualizarSelecao(itens);
-    } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        indexSelecionado = (indexSelecionado - 1 + itens.length) % itens.length;
-        atualizarSelecao(itens);
-    } else if (e.key === "Enter") {
-        if (indexSelecionado > -1 && itens[indexSelecionado]) {
-            e.preventDefault();
-            itens[indexSelecionado].click();
-        }
-    }
-});
-
-// Salva fazenda e aplicação ao alterar
-document.getElementById("fazenda").addEventListener("change", salvarLocal);
-document.getElementById("aplicacao").addEventListener("input", salvarLocal);
-
-// Fecha a lista ao clicar fora
-document.addEventListener("click", function (evento) {
-    const divResultados = document.getElementById("resultados");
-    const campoBusca = document.getElementById("busca");
-
-    if (!divResultados.contains(evento.target) && evento.target !== campoBusca) {
-        divResultados.innerHTML = "";
-    }
-});
-
-// ============================================================
-//  ATUALIZAR SELEÇÃO POR TECLADO
-// ============================================================
-function atualizarSelecao(itens) {
-    itens.forEach((item, i) => {
-        if (i === indexSelecionado) {
-            item.classList.add("ativo");
-            item.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        } else {
-            item.classList.remove("ativo");
-        }
-    });
-}
-
-// ============================================================
-//  ADICIONAR PRODUTO DA BUSCA NA TABELA
-// ============================================================
-function adicionarDireto(produto) {
-    const existente = lista.find(item => item.codigo === produto.codigo);
-
-    if (existente) {
-        alert("Este item já foi adicionado à lista!");
-        return;
-    }
-
-    lista.push({
-        codigo: produto.codigo,
-        descricao: produto.descricao,
-        Quantidade: "",
-        marca: "",
-        cor: "",
-        obs: ""
-    });
-
-    atualizarTabela();
-    salvarLocal();
-    destacarUltimaLinha();
-}
-
-// ============================================================
-//  DESTACAR ÚLTIMA LINHA ADICIONADA
-// ============================================================
-function destacarUltimaLinha() {
-    const tbody = document.querySelector("#tabela tbody");
-    const linhas = tbody.querySelectorAll("tr");
-    if (!linhas.length) return;
-
-    const ultima = linhas[linhas.length - 1];
-    ultima.classList.add("linha-nova");
-    setTimeout(() => ultima.classList.remove("linha-nova"), 1200);
-}
-
-// ============================================================
-//  ADICIONAR ITEM MANUAL
-// ============================================================
-function adicionarManual() {
-    const mensagem = "Você tem certeza que não encontrou o produto na busca?\n\nItens cadastrados manualmente podem atrasar o processo de compra.";
-
-    if (confirm(mensagem)) {
-        lista.push({
-            codigo: "SEM CADASTRO",
-            descricao: "",
-            Quantidade: "",
-            marca: "",
-            cor: "",
-            obs: ""
-        });
-        atualizarTabela();
-        salvarLocal();
-        destacarUltimaLinha();
-    }
-}
-
-// ============================================================
-//  REMOVER ITEM DA LISTA
-// ============================================================
-function remover(index) {
-    lista.splice(index, 1);
-    atualizarTabela();
-    salvarLocal();
-}
-
-// ============================================================
-//  ATUALIZAR TABELA
-// ============================================================
-function atualizarTabela() {
-    const tbody = document.querySelector("#tabela tbody");
-
-    if (lista.length === 0) {
-        tbody.innerHTML = `
-            <tr id="linha-vazia">
-                <td colspan="7" class="estado-vazio">
-                    <div class="estado-vazio-icone">📋</div>
-                    <div class="estado-vazio-titulo">Nenhum item adicionado</div>
-                    <div class="estado-vazio-subtitulo">Selecione uma categoria e busque produtos, ou adicione um item manual.</div>
-                </td>
-            </tr>
-        `;
-        atualizarContador();
-        return;
-    }
-
-    tbody.innerHTML = lista.map((item, index) => {
-        const celulaDescricao = item.codigo === "SEM CADASTRO"
-            ? `<input type="text" placeholder="Escreva o nome do produto..."
-                value="${sanitizar(item.descricao)}"
-                oninput="lista[${index}].descricao = this.value.toUpperCase(); salvarLocal()"
-                style="border-bottom: 2px solid var(--primary); background: #fffdf0;">`
-            : sanitizar(item.descricao);
-
-        return `
-        <tr>
-            <td><span class="badge-codigo">${sanitizar(item.codigo)}</span></td>
-            <td>${celulaDescricao}</td>
-            <td>
-                <input type="text" placeholder="Ex: 10un" class="input-qtd"
-                value="${sanitizar(item.Quantidade)}"
-                oninput="lista[${index}].Quantidade = this.value.toUpperCase(); salvarLocal()">
-            </td>
-            <td>
-                <input type="text" placeholder="Marca"
-                value="${sanitizar(item.marca)}"
-                oninput="lista[${index}].marca = this.value.toUpperCase(); salvarLocal()">
-            </td>
-            <td>
-                <input type="text" placeholder="Cor"
-                value="${sanitizar(item.cor)}"
-                oninput="lista[${index}].cor = this.value.toUpperCase(); salvarLocal()">
-            </td>
-            <td>
-                <input type="text" placeholder="Observações"
-                value="${sanitizar(item.obs)}"
-                oninput="lista[${index}].obs = this.value.toUpperCase(); salvarLocal()">
-            </td>
-            <td style="text-align:center;">
-                <button class="btn-excluir" onclick="remover(${index})">❌</button>
-            </td>
-        </tr>
-        `;
-    }).join('');
-
-    atualizarContador();
-}
-
-// ============================================================
-//  CONTADOR DE ITENS
-// ============================================================
-function atualizarContador() {
-    const contador = document.getElementById("contador-itens");
-    if (!contador) return;
-
-    contador.textContent = lista.length === 0 ? ""
-        : lista.length === 1 ? "1 item na lista"
-        : `${lista.length} itens na lista`;
-}
-
-// ============================================================
-//  LIMPAR SISTEMA
-// ============================================================
-function refreshSistema() {
-    if (confirm("Deseja realmente limpar toda a lista?")) {
-        lista = [];
-        atualizarTabela();
-        document.getElementById("busca").value = "";
-        document.getElementById("resultados").innerHTML = "";
-        localStorage.removeItem(STORAGE_KEY);
-    }
-}
-
-// ============================================================
-//  VALIDAÇÃO COMUM (Excel, PDF e E-mail)
-// ============================================================
-function validarParaExportar() {
-    const fazenda   = document.getElementById("fazenda").value;
-    const aplicacao = document.getElementById("aplicacao").value.trim();
-
-    if (!fazenda || !aplicacao) {
-        alert("Por favor, selecione a Fazenda e o Local de Aplicação.");
-        return false;
-    }
-    if (lista.length === 0) {
-        alert("A lista está vazia!");
-        return false;
-    }
-    const temErro = lista.some(item => {
-        const semQtd        = !item.Quantidade || item.Quantidade.trim() === "";
-        const manualSemDesc = item.codigo === "SEM CADASTRO" && (!item.descricao || item.descricao.trim() === "");
-        return semQtd || manualSemDesc;
-    });
-    if (temErro) {
-        alert("Preencha todas as Quantidades e as Descrições dos itens manuais antes de exportar.");
-        return false;
-    }
-    return true;
-}
-
-// ============================================================
-//  EXPORTAR EXCEL
-// ============================================================
-function exportarExcel() {
-    if (!validarParaExportar()) return;
-
-    const fazenda   = document.getElementById("fazenda").value;
-    const aplicacao = document.getElementById("aplicacao").value.trim();
-
-    const dadosTratados = lista.map(item => ({
-        "FAZENDA":         fazenda.toUpperCase(),
-        "LOCAL APLICAÇÃO": aplicacao.toUpperCase(),
-        "CÓDIGO":          item.codigo,
-        "DESCRIÇÃO":       item.descricao.toUpperCase(),
-        "QUANTIDADE":      item.Quantidade.toUpperCase(),
-        "MARCA":           (item.marca || "").toUpperCase(),
-        "COR":             (item.cor   || "").toUpperCase(),
-        "OBSERVAÇÕES":     (item.obs   || "").toUpperCase()
-    }));
-
-    let ws = XLSX.utils.json_to_sheet(dadosTratados);
-    let wb = XLSX.utils.book_new();
-
-    ws['!cols'] = [
-        { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 40 },
-        { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 45 }
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, "Pedido de Materiais");
-
-    const agora   = new Date();
-    const dataStr = agora.toLocaleDateString('pt-BR').replace(/\//g, '-');
-    const horas   = String(agora.getHours()).padStart(2, '0');
-    const minutos = String(agora.getMinutes()).padStart(2, '0');
-    const nomeArquivo = `PEDIDO_${fazenda.replace(/\s+/g, '_')}_${dataStr}_${horas}h${minutos}.xlsx`;
-
-    XLSX.writeFile(wb, nomeArquivo);
-}
-
-// ============================================================
-//  EXPORTAR PDF
-// ============================================================
-function exportarPDF() {
-    if (!validarParaExportar()) return;
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-
-    const fazenda   = document.getElementById("fazenda").value;
-    const aplicacao = document.getElementById("aplicacao").value.trim();
-
-    const azulHorita  = [40, 6, 231];
-    const cinzaEscuro = [51, 51, 51];
-    const cinzaClaro  = [102, 102, 102];
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(...azulHorita);
-    doc.text("SOLICITAÇÃO DE MATERIAIS", 14, 30);
-
-    doc.setDrawColor(...azulHorita);
-    doc.setLineWidth(1);
-    doc.line(14, 33, 60, 33);
-
-    doc.setFontSize(10);
-    doc.setTextColor(...cinzaEscuro);
-    doc.text("DADOS DO SOLICITANTE", 14, 45);
-
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...cinzaClaro);
-    doc.text("Fazenda Unidade:", 14, 52);
-    doc.text("Local de Aplicação:", 14, 58);
-    doc.text("Data da Emissão:", 14, 64);
-
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text(fazenda.toUpperCase(), 50, 52);
-    doc.text(aplicacao.toUpperCase(), 50, 58);
-    doc.text(new Date().toLocaleDateString('pt-BR'), 50, 64);
-
-    const rows = lista.map(item => [
-        item.codigo,
-        item.descricao.toUpperCase(),
-        item.Quantidade.toUpperCase(),
-        (item.marca || "").toUpperCase() || "-",
-        (item.cor   || "").toUpperCase() || "-",
-        (item.obs   || "").toUpperCase() || "-"
-    ]);
-
-    doc.autoTable({
-        startY: 75,
-        head: [['Cód', 'Descrição', 'Qtd', 'Marca', 'Cor', 'Obs']],
-        body: rows,
-        theme: 'striped',
-        headStyles: { fillColor: azulHorita, halign: 'center' },
-        styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
-        columnStyles: {
-            0: { cellWidth: 20, halign: 'center' },
-            1: { cellWidth: 50 },
-            2: { cellWidth: 14, halign: 'center' },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 20 },
-            5: { cellWidth: 'auto' }
-        },
-        margin: { left: 14, right: 14 },
-        pageBreak: 'auto'
-    });
-
-    doc.save(`SOLICITACAO_${fazenda.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`);
-}
-
-// ============================================================
-//  DICIONÁRIO DE DESTINATÁRIOS POR FAZENDA
-// ============================================================
-const contatosFazendas = {
-    "Faz. Arizona":       "vitoria@horita.com.br",
-    "Faz. Vitoria":       "vitoria@horita.com.br",
-    "Faz. Australia":     "australia@horita.com.br",
-    "Faz. Colorado":      "colorado@horita.com.br",
-    "Faz. Acalanto":      "acalanto@horita.com.br",
-    "Faz. Roda Velha":    "acalanto@horita.com.br",
-    "Faz. Timbauba":      "timbauba@horita.com.br",
-    "Faz. Anda Luz":      "timbauba@horita.com.br",
-    "Faz. Sagarana":      "sagarana@horita.com.br",
-    "Faz. Requinte":      "requinte@horita.com.br",
-    "Algodoeira":         "algodoeira.vitoria@horita.com.br",
-    "Escritório Central": null,
-    "Chácara":            null
-};
-
-// ============================================================
-//  ENVIAR E-MAIL
-// ============================================================
-function enviarEmail() {
-    if (!validarParaExportar()) return;
-
-    const fazenda   = document.getElementById("fazenda").value;
-    const aplicacao = document.getElementById("aplicacao").value.trim();
-
-    const emailFazenda  = contatosFazendas[fazenda];
-    const emailCompras  = "compras@horita.com.br";
-    const destinatarios = emailFazenda
-        ? `${emailFazenda}; ${emailCompras}`
-        : emailCompras;
-
-    const assunto = `Solicitação de Materiais - ${fazenda.toUpperCase()} (${aplicacao.toUpperCase()})`;
-
-    let corpo = `Olá,\n\nSegue solicitação de materiais conforme detalhes abaixo:\n\n`;
-    corpo += `FAZENDA: ${fazenda.toUpperCase()}\n`;
-    corpo += `LOCAL DE APLICAÇÃO: ${aplicacao.toUpperCase()}\n`;
-    corpo += `DATA: ${new Date().toLocaleDateString('pt-BR')}\n`;
-    corpo += `--------------------------------------------------\n\n`;
-
-    lista.forEach((item, index) => {
-        corpo += `${index + 1}. ${item.descricao.toUpperCase()}\n`;
-        corpo += `   CÓD: ${item.codigo} | QTD: ${item.Quantidade.toUpperCase()}\n`;
-        if (item.marca) corpo += `   MARCA: ${item.marca.toUpperCase()}\n`;
-        if (item.obs)   corpo += `   OBS: ${item.obs.toUpperCase()}\n`;
-        corpo += `--------------------------------------------------\n`;
-    });
-
-    corpo += `\nFavor conferir o arquivo oficial em anexo.\nAtenciosamente.`;
-
-    window.location.href = `mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-}
-
-// ============================================================
-//  INICIALIZAÇÃO
-// ============================================================
-document.addEventListener("DOMContentLoaded", () => {
-    carregarLocal();
-});
