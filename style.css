@@ -472,3 +472,46 @@ td input[oninput*="descricao"] {
         padding: 8px 10px;
     }
 }
+/* ============================================================
+   SUGESTÃO DE OUTRAS CATEGORIAS
+   ============================================================ */
+
+/* Cabeçalho explicativo */
+.item-cabecalho-sugestao {
+    padding: 10px 14px 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #f30505;
+    background: #ffc9c9;
+    border-bottom: 1px solid #fde8c0;
+    cursor: default;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Separador de categoria dentro das sugestões */
+.item-separador-categoria {
+    padding: 6px 14px 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--primary);
+    background: #f4f6ff;
+    border-top: 1px solid #e8ecff;
+    border-bottom: 1px solid #e8ecff;
+    cursor: default;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* Item de sugestão — visual levemente diferente do item normal */
+.item.item-sugestao {
+    padding-left: 20px;
+    color: #444;
+    background: #fdfeff;
+}
+
+.item.item-sugestao:hover {
+    background: #eef2ff;
+    color: var(--primary);
+    padding-left: 24px;
+}
