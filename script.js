@@ -684,7 +684,10 @@ function enviarEmail() {
 
     corpo += `\nFavor conferir o arquivo oficial em anexo.\nAtenciosamente.`;
 
-    window.location.href = `mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${destinatarios}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+
+    // Abre em uma nova aba para não fechar o seu sistema de pedidos
+    window.open(gmailUrl, '_blank');
 }
 
 // ============================================================
